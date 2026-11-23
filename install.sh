@@ -41,7 +41,7 @@ REF="main"
 SRC=""
 UNINSTALL=0
 
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
   case "$1" in
     codex|cursor|claude) TOOL="$1" ;;
     --tool)
@@ -62,9 +62,9 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-[ -n "$TOOL" ] || { usage; die "missing target tool: codex | cursor | claude"; }
+[[ -n "$TOOL" ]] || { usage; die "missing target tool: codex | cursor | claude"; }
 
-if [ "$TOOL" = "claude" ]; then
+if [[ "$TOOL" = "claude" ]]; then
   cat <<'EOF'
 SDD installs natively in Claude Code — run inside a Claude Code session:
 
@@ -74,8 +74,8 @@ EOF
   exit 0
 fi
 
-if [ -z "$PREFIX" ]; then
-  if [ "$GLOBAL" = 1 ]; then PREFIX="$HOME"; else PREFIX="$PWD"; fi
+if [[ -z "$PREFIX" ]]; then
+  if [[ "$GLOBAL" = 1 ]]; then PREFIX="$HOME"; else PREFIX="$PWD"; fi
 fi
 
 case "$TOOL" in
@@ -87,7 +87,7 @@ esac
 rm -rf "${SKILLS_ROOT:?}/sdd"
 rm -f "$AGENTS_DIR"/sdd-*.toml "$AGENTS_DIR"/sdd-*.md
 
-if [ "$UNINSTALL" = 1 ]; then
+if [[ "$UNINSTALL" = 1 ]]; then
   log "uninstalled sdd from $PREFIX ($TOOL)"
   exit 0
 fi
@@ -99,15 +99,15 @@ fi
 CLEANUP_DIR=""
 INSTALL_DONE=0
 cleanup() {
-  if [ -n "$CLEANUP_DIR" ]; then rm -rf "$CLEANUP_DIR"; fi
-  if [ "$INSTALL_DONE" != 1 ]; then
+  if [[ -n "$CLEANUP_DIR" ]]; then rm -rf "$CLEANUP_DIR"; fi
+  if [[ "$INSTALL_DONE" != 1 ]]; then
     rm -rf "${SKILLS_ROOT:?}/sdd"
     rm -f "$AGENTS_DIR"/sdd-*.toml "$AGENTS_DIR"/sdd-*.md
   fi
 }
 trap cleanup EXIT
 
-if [ -z "$SRC" ]; then
+if [[ -z "$SRC" ]]; then
   command -v curl >/dev/null 2>&1 || die "curl is required to download $REPO"
   command -v tar  >/dev/null 2>&1 || die "tar is required to unpack $REPO"
   CLEANUP_DIR="$(mktemp -d)"
@@ -118,14 +118,14 @@ if [ -z "$SRC" ]; then
   SRC="$CLEANUP_DIR"
 fi
 
-[ -f "$SRC/skills/specify/SKILL.md" ] \
+[[ -f "$SRC/skills/specify/SKILL.md" ]] \
   || die "source $SRC does not look like the sdd repo (skills/specify/SKILL.md missing)"
 
 # --- collision check: a marketplace install would list every skill twice ------------------
 # `codex plugin marketplace add` registers the ORIGINAL names ($specify); this script installs
 # the sdd- prefixed copies. Both at once → a doubled skill list. Warn, don't block (README:
 # "pick one of the two paths").
-if [ "$TOOL" = "codex" ] && [ -f "$HOME/.codex/config.toml" ] \
+if [[ "$TOOL" == "codex" ]] && [[ -f "$HOME/.codex/config.toml" ]] \
    && grep -q 'plugins."sdd@' "$HOME/.codex/config.toml" 2>/dev/null; then
   warn "a marketplace install of sdd is already registered in ~/.codex/config.toml — adding the script install too will list each skill twice (\$specify AND \$sdd-specify); pick one path (see README), or remove the marketplace plugin"
 fi
@@ -156,7 +156,7 @@ done
 mkdir -p "$AGENTS_DIR"
 n_agents=0
 
-if [ "$TOOL" = "cursor" ]; then
+if [[ "$TOOL" = "cursor" ]]; then
   for agent_md in "$SRC"/agents/*.md; do
     n="$(basename "$agent_md" .md)"
     out="$AGENTS_DIR/sdd-${n}.md"
@@ -242,12 +242,12 @@ INSTALL_DONE=1
 # Skipped for --global: $HOME is not a project, and a settings file there configures nothing.
 # Never overwrites an existing file, and --uninstall never removes it (it is the user's config).
 SETTINGS_NOTE=""
-if [ "$PREFIX" != "$HOME" ]; then
+if [[ "$PREFIX" != "$HOME" ]]; then
   settings_file="$PREFIX/.claude/sdd.local.md"
   canon="$SRC/skills/_shared/settings-file.md"
-  if [ -f "$settings_file" ]; then
+  if [[ -f "$settings_file" ]]; then
     SETTINGS_NOTE="kept (already present)"
-  elif [ -f "$canon" ]; then
+  elif [[ -f "$canon" ]]; then
     # Extract the two canonical pieces from _shared/settings-file.md — never a second copy of
     # the template in this script, which would drift the moment a key is added.
     fm="$(awk '/^## The documented frontmatter/{f=1} f&&/^```yaml$/{y=1;next} y&&/^```$/{exit} y' "$canon")"
@@ -260,7 +260,7 @@ if [ "$PREFIX" != "$HOME" ]; then
       -e "s|^team_mode: .*|team_mode: false           # set by install.sh ($TOOL): TeamCreate is Claude Code-only|" \
       -e "s|^workflow_mode: .*|workflow_mode: off         # set by install.sh ($TOOL): Workflow is Claude Code-only|" \
       -e "s|^max_parallel_agents: .*|max_parallel_agents: 1     # set by install.sh ($TOOL): no parallel host mechanism|")"
-    if [ -n "$fm" ] && [ -n "$body" ] && mkdir -p "$PREFIX/.claude" 2>/dev/null; then
+    if [[ -n "$fm" ]] && [[ -n "$body" ]] && mkdir -p "$PREFIX/.claude" 2>/dev/null; then
       {
         printf -- '---\n%s\n---\n\n' "$fm"
         # shellcheck disable=SC2016  # `$sdd-config` is literal prose, not an expansion
@@ -269,14 +269,14 @@ if [ "$PREFIX" != "$HOME" ]; then
       } > "$settings_file" && SETTINGS_NOTE="created with documented defaults, ${TOOL}-clamped parallelism"
     fi
   fi
-  if [ -z "$SETTINGS_NOTE" ]; then
+  if [[ -z "$SETTINGS_NOTE" ]]; then
     warn "could not write $settings_file (template missing or unwritable) — the skills create it on their first run instead"
   fi
   # .gitignore: both entries are per-developer and must never be committed.
-  if [ -n "$SETTINGS_NOTE" ]; then
+  if [[ -n "$SETTINGS_NOTE" ]]; then
     gitignore="$PREFIX/.gitignore"
     touch "$gitignore" 2>/dev/null || true
-    if [ -w "$gitignore" ]; then
+    if [[ -w "$gitignore" ]]; then
       grep -qxF '.claude/*.local.md' "$gitignore" || printf '%s\n' '.claude/*.local.md' >> "$gitignore"
       grep -qxF '.worktrees/'        "$gitignore" || printf '%s\n' '.worktrees/'        >> "$gitignore"
     fi
@@ -286,14 +286,14 @@ fi
 log ""
 log "installed sdd ($TOOL):"
 log "  skills  → $SKILLS_ROOT/sdd  (${n_skills} skills)"
-if [ "$n_agents" -gt 0 ]; then
+if [[ "$n_agents" -gt 0 ]]; then
   log "  agents  → $AGENTS_DIR  (${n_agents} agents, sdd-* prefixed)"
 fi
 case "$TOOL" in
   codex)  log "  invoke  → type \$sdd-… in codex, e.g. \$sdd-specify <slug>" ;;
   cursor) log "  invoke  → type / in the chat and pick sdd-…, e.g. sdd-specify" ;;
 esac
-if [ -n "$SETTINGS_NOTE" ]; then
+if [[ -n "$SETTINGS_NOTE" ]]; then
   log "  config  → $PREFIX/.claude/sdd.local.md  (${SETTINGS_NOTE})"
 fi
 log "  mapping → $SKILLS_ROOT/sdd/skills/_shared/tool-adapters.md"

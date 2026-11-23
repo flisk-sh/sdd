@@ -80,7 +80,7 @@ a fixed number.)
 - [ ] **Every skill ends with the handoff block** ([`skills/_shared/handoff.md`](./skills/_shared/handoff.md))
       as its final step.
 - [ ] **Invocation form is `/sdd:<name>`** — the namespaced form, never the hyphenated `/sdd-<name>`.
-- [ ] **Relative links resolve.** A `[text](./path.md)` target is a real file. The one exception is a
+- [ ] **Relative links resolve.** A relative Markdown link is a real file. The one exception is a
       template-runtime path (`../spec.md`, `../sad.md`, `../contracts/…`, …) that resolves only inside
       a generated `docs/features/<slug>/` folder — those are allowlisted in the validator.
 - [ ] **References in `references/`, templates in `templates/`** — one level deep, no nested folders.

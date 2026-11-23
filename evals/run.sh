@@ -13,7 +13,7 @@ MAX_TURNS="${SDD_EVAL_MAX_TURNS:-40}"
 # NB: an EMPTY array + `set -u` breaks on macOS bash 3.2 — expand with the
 # ${arr[@]+"${arr[@]}"} idiom everywhere.
 MODEL_ARGS=()
-[ -n "${SDD_EVAL_MODEL:-}" ] && MODEL_ARGS=(--model "$SDD_EVAL_MODEL")
+[[ -n "${SDD_EVAL_MODEL:-}" ]] && MODEL_ARGS=(--model "$SDD_EVAL_MODEL")
 
 command -v claude >/dev/null 2>&1 || { echo "FATAL: claude CLI not found" >&2; exit 2; }
 command -v jq >/dev/null 2>&1 || { echo "FATAL: jq not found" >&2; exit 2; }
@@ -21,7 +21,7 @@ command -v jq >/dev/null 2>&1 || { echo "FATAL: jq not found" >&2; exit 2; }
 run_scenario() {
   local name="$1"
   local dir="$EVALS_DIR/scenarios/$name"
-  [ -d "$dir" ] || { echo "FATAL: no such scenario: $name" >&2; return 2; }
+  [[ -d "$dir" ]] || { echo "FATAL: no such scenario: $name" >&2; return 2; }
 
   local work meta
   work="$(mktemp -d "${TMPDIR:-/tmp}/sdd-eval-$name.XXXXXX")"
@@ -55,7 +55,7 @@ run_scenario() {
   # messages (result last) in others — accept both.
   local extract='if type=="array" then (last.result // empty) else (.result // empty) end'
   # A judge must not award a pass to an errored run or inaccessible plugin instructions.
-  if [ "$run_rc" -ne 0 ] || ! jq -e 'if type=="array" then last else . end | .is_error == false' "$out" >/dev/null 2>&1; then
+  if [[ "$run_rc" -ne 0 ]] || ! jq -e 'if type=="array" then last else . end | .is_error == false' "$out" >/dev/null 2>&1; then
     echo "== $name: FAIL (CLI run failed; inspect $out)"
     return 1
   fi
@@ -94,11 +94,11 @@ run_scenario() {
 
   printf '%s\n' "$judge_out"
   echo "== $name: ${verdict:-UNPARSEABLE}"
-  [ "$verdict" = "PASS" ]
+  [[ "$verdict" = "PASS" ]]
 }
 
 # No args → every scenario (dir names are kebab-case, splitting is safe).
-if [ "$#" -eq 0 ]; then
+if [[ "$#" -eq 0 ]]; then
   # shellcheck disable=SC2046
   set -- $(ls "$EVALS_DIR/scenarios")
 fi
