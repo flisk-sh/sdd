@@ -1,5 +1,31 @@
 # Contributing to SDD
 
+## Contributor flow: spec first, merge queue lands it
+
+This is how a change gets into flisk-sh/sdd, and the flow the plugin's skills teach for every
+flisk-sh repo. It comes from what went wrong in 367 merged PRs
+([`skills/_shared/flisk-lessons.md`](./skills/_shared/flisk-lessons.md)).
+
+1. **Open an issue or a spec first** for anything bigger than a typo. Run `/sdd:classify-size`; an
+   S change can go straight to a PR, an M or bigger needs `/sdd:specify` and the spec linked from the PR.
+2. **Fork, branch, and sign off every commit** (`git commit -s`). Unsigned commits cannot be merged
+   and history cannot be rewritten later; maintainers have had to re-apply whole PRs for this
+   (flisk-sh/flisk#5288, #5289).
+3. **Run the gates locally** — `python3 scripts/validate_plugin.py` here, the repo's own gates
+   elsewhere. Do not count on a bot review: on small repos CodeRabbit skips and LlamaPReview runs out
+   of quota, so your own checks are the review.
+4. **Self-review with `/sdd:review`** and walk
+   [`flisk-review-checklist.md`](./skills/review/references/flisk-review-checklist.md). Put the
+   evidence (test output, screenshots, green run links) in the PR body.
+5. **Open the PR.** CI (`validate`) must be green. A maintainer reads it once, then the merge queue
+   lands PRs one at a time on top of current main. If the queue rejects it, rebase and push; don't
+   open a duplicate PR.
+6. **Your name stays on it.** If a maintainer has to re-apply your change, you are credited with
+   `Co-authored-by`.
+
+See [`docs/flisk/worked-prs.md`](./docs/flisk/worked-prs.md) for small merged PRs that show the
+shape of a good change.
+
 ## Adding or editing a skill
 
 A skill lives in `skills/<name>/` and is the **source of truth** for its stage.

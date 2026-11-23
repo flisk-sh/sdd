@@ -18,6 +18,7 @@ A stage-1 finding means the feature does not yet meet its spec — it blocks shi
 - **Security.** Identity from the session not from input; no new injection/leak surface; secrets not logged.
 - **Boundary violations.** Stayed inside the module(s) the tasks named; no weakened test; no forbidden DB construct vs the repo's migration rules.
 - **Test adequacy.** Do the tests exercise the real behaviour, including the failure paths — or only the happy path?
+- **Flisk checklist (flisk-sh repos or any repo using GEL).** Walk [`./flisk-review-checklist.md`](./flisk-review-checklist.md) — 15 checks, each one a defect that a bot, a gate or a follow-up fix PR caught after merge. Answer each one, "not applicable" included.
 
 ## Dispatch shape
 
