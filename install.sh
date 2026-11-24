@@ -83,11 +83,13 @@ case "$TOOL" in
   cursor) SKILLS_ROOT="$PREFIX/.cursor/skills"; AGENTS_DIR="$PREFIX/.cursor/agents" ;;
 esac
 
-# --- idempotent clean (also the uninstall path) ------------------------------------------
-rm -rf "${SKILLS_ROOT:?}/sdd"
-rm -f "$AGENTS_DIR"/sdd-*.toml "$AGENTS_DIR"/sdd-*.md
+clear_install() {
+  rm -rf "${SKILLS_ROOT:?}/sdd"
+  rm -f "$AGENTS_DIR"/sdd-*.toml "$AGENTS_DIR"/sdd-*.md
+}
 
 if [[ "$UNINSTALL" = 1 ]]; then
+  clear_install
   log "uninstalled sdd from $PREFIX ($TOOL)"
   exit 0
 fi
@@ -97,12 +99,12 @@ fi
 # before the summary (INSTALL_DONE=1), the half-copied tree + generated agents are removed —
 # the prefix is left clean, not with a silently broken install.
 CLEANUP_DIR=""
+INSTALL_STARTED=0
 INSTALL_DONE=0
 cleanup() {
   if [[ -n "$CLEANUP_DIR" ]]; then rm -rf "$CLEANUP_DIR"; fi
-  if [[ "$INSTALL_DONE" != 1 ]]; then
-    rm -rf "${SKILLS_ROOT:?}/sdd"
-    rm -f "$AGENTS_DIR"/sdd-*.toml "$AGENTS_DIR"/sdd-*.md
+  if [[ "$INSTALL_STARTED" = 1 && "$INSTALL_DONE" != 1 ]]; then
+    clear_install
   fi
 }
 trap cleanup EXIT
@@ -120,6 +122,7 @@ fi
 
 [[ -f "$SRC/skills/specify/SKILL.md" ]] \
   || die "source $SRC does not look like the sdd repo (skills/specify/SKILL.md missing)"
+[[ -d "$SRC/agents" ]] || die "source $SRC is incomplete (agents directory missing)"
 
 # --- collision check: a marketplace install would list every skill twice ------------------
 # `codex plugin marketplace add` registers the ORIGINAL names ($specify); this script installs
@@ -131,6 +134,8 @@ if [[ "$TOOL" == "codex" ]] && [[ -f "$HOME/.codex/config.toml" ]] \
 fi
 
 # --- copy the subtree verbatim: <skills-root>/sdd/{skills,agents} ------------------------
+INSTALL_STARTED=1
+clear_install
 mkdir -p "$SKILLS_ROOT/sdd"
 cp -R "$SRC/skills" "$SKILLS_ROOT/sdd/skills"
 cp -R "$SRC/agents" "$SKILLS_ROOT/sdd/agents"

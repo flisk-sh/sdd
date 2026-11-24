@@ -124,6 +124,15 @@ jobs:
             # idempotency: a second run cleans first and converges to the same layout
             ./install.sh "$tool" --src . --prefix "$prefix"
             grep -q '^name: sdd-specify$' "$skills/sdd/skills/specify/SKILL.md"
+            # Reject incomplete sources without removing the installed skills or agents.
+            mkdir "$prefix/missing-agents" && cp -R skills "$prefix/missing-agents/"
+            for invalid_src in "$prefix/missing-src" "$prefix/missing-agents"; do
+              if ./install.sh "$tool" --src "$invalid_src" --prefix "$prefix"; then
+                echo "FAIL: incomplete source was accepted"; exit 1
+              fi
+              grep -q '^name: sdd-specify$' "$skills/sdd/skills/specify/SKILL.md"
+              test -f "$agents/sdd-reviewer.toml" || test -f "$agents/sdd-reviewer.md"
+            done
             # a mid-install failure must roll back, not leave a half-copy
             mkdir "$prefix/broken-src" && cp -R skills agents "$prefix/broken-src/"
             sed_i() { if sed --version >/dev/null 2>&1; then sed -i "$@"; else sed -i '' "$@"; fi; }
